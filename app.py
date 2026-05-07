@@ -49,7 +49,14 @@ def get_token():
 
         log.info("🔑 구글 인증 중...")
         master = gpsoauth.perform_master_login(
-            email=email, password=passwd, android_id=android
+            email=email,
+            password=passwd,
+            android_id=android,
+            service="ac2dm",
+            device_country="kr",
+            operator_country="kr",
+            lang="ko",
+            sdk_version=28
         )
         if "Token" not in master:
             raise RuntimeError(f"마스터 로그인 실패: {master}")
@@ -60,7 +67,11 @@ def get_token():
             android_id=android,
             service="oauth2:https://www.googleapis.com/auth/photoslibrary",
             app="com.google.android.apps.photos",
-            client_sig="38918a453d07199354f8b19af05ec6562ced5788"
+            client_sig="38918a453d07199354f8b19af05ec6562ced5788",
+            device_country="kr",
+            operator_country="kr",
+            lang="ko",
+            sdk_version=28
         )
         if "Auth" not in oauth:
             raise RuntimeError(f"OAuth 실패: {oauth}")
