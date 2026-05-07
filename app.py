@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 PhotoSync — 공식 Google OAuth 2.0 버전
-Render.com 무료 배포용
+한글 파일명 지원
 """
 
 import os, time, json, logging, secrets
+from urllib.parse import quote
 import requests
 from flask import Flask, request, jsonify, render_template_string, redirect, session
 
@@ -60,23 +61,27 @@ def get_access_token():
         return tokens["access_token"]
     return None
 
-# ── 구글 포토 업로드 ──
+# ── 구글 포토 업로드 (한글 파일명 지원) ──
 SUPPORTED = {".jpg",".jpeg",".png",".gif",".bmp",".webp",
              ".mp4",".mov",".avi",".mkv",".heic",".heif"}
 
 def upload_to_gp(token, data, filename):
+    # 한글 등 특수문자 파일명 인코딩
+    safe_name = quote(filename.encode('utf-8'))
+
     r1 = requests.post(
         "https://photoslibrary.googleapis.com/v1/uploads",
         headers={
             "Authorization": f"Bearer {token}",
             "Content-type": "application/octet-stream",
             "X-Goog-Upload-Protocol": "raw",
-            "X-Goog-Upload-File-Name": filename,
+            "X-Goog-Upload-File-Name": safe_name,
         },
         data=data, timeout=120
     )
     if r1.status_code != 200:
         raise RuntimeError(f"업로드 오류 {r1.status_code}")
+
     r2 = requests.post(
         "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate",
         headers={"Authorization": f"Bearer {token}"},
